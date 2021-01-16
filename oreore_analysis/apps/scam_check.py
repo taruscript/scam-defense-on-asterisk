@@ -10,7 +10,7 @@ app = Blueprint('input_data', __name__)
 
 model = KeyedVectors.load_word2vec_format('apps/word_model/entity_vector.model.bin', binary=True)
 # model = KeyedVectors.load_word2vec_format('apps/word_model/entity_vector.model.bin')
-tagger = MeCab.Tagger("-d /usr/local/lib/mecab/dic/ipadic")
+tagger = MeCab.Tagger("-d /var/lib/mecab/dic/ipadic")
 tagger.parse("")
 
 
