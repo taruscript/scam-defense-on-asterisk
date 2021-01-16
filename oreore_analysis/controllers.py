@@ -1,5 +1,5 @@
 from flask import Flask, render_template, Blueprint
-from apps import transcription, scam_check
+from apps import scam_check
 
 app = Flask(__name__)
 
