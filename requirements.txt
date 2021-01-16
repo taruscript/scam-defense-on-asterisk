@@ -1,0 +1,6 @@
+requests
+pydub
+flask
+SpeechRecognition
+mecab-python3
+gensim
