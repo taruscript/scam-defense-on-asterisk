@@ -27,7 +27,11 @@ def input_data():
     save_path = f"upload/{fs.filename}"
     fs.save(save_path)
 
+    
     audio_recognized = voice_recognize(save_path)
+
+    if audio_recognized is None:
+        return jsonify({"msg": "fail"})
     scam_result =  scam_check(audio_recognized)
     # return jsonify(scam_result)
     return jsonify({"msg":"sucess"})
