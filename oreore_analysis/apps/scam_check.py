@@ -68,9 +68,11 @@ def scam_check(text):
                 pass
             
         node = node.next
-    highcore_index = scores.index(max(scores)) // len(keywords)
-    highscore_word = word[highcore_index]
+    # highcore_index = scores.index(max(scores)) // len(keywords)
+    # highscore_word = word[highcore_index]
 
-    print(highscore_word)
-    print(max(scores))
-    return {"score": max(scores), "high_extraction": highscore_word}
+    # print(highscore_word)
+    # print(max(scores))
+    # return {"score": max(scores), "high_extraction": highscore_word}
+    print(word)
+    return {"test": "test"}
