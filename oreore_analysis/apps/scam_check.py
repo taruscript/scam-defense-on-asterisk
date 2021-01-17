@@ -43,7 +43,7 @@ def voice_recognize(save_path):
         audio = r.record(source)
     try:
         result_recognized = r.recognize_google(audio, language='ja-JP')
-    except speech_recognition.UnknownValueError:
+    except sr.UnknownValueError:
         print("音声認識ができませんでした")
         return None
     return result_recognized
