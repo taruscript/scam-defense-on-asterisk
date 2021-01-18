@@ -29,12 +29,13 @@ def input_data():
     fs.save(save_path)
 
     audio_recognized = voice_recognize(save_path)
-
+    print(audio_recognized)
     if audio_recognized is None:
         return jsonify({"msg": "fail"})
+        
     scam_result =  scam_check(audio_recognized)
     # return jsonify(scam_result)
-    return jsonify({"msg":"sucess", "result": scam_result})
+    return jsonify({"msg":"sucess", "check": scam_result})
 
 
 def voice_recognize(save_path):
@@ -42,6 +43,7 @@ def voice_recognize(save_path):
     r = sr.Recognizer()
     with sr.AudioFile(save_path) as source:
         audio = r.record(source)
+
     try:
         result_recognized = r.recognize_google(audio, language='ja-JP')
     except sr.UnknownValueError:
@@ -52,34 +54,32 @@ def voice_recognize(save_path):
 
 # 特殊詐欺を検知する
 def scam_check(text):
-    print(text)
     #渡されたテキストを形態素解析
     node = tagger.parseToNode(text)
     scores = []
-    word = []
+    # word = []
+    results = []
     # 特殊詐欺に使われそうな語群
     keywords = ['銀行','警察']
     # keywords = ["泡", "石鹸"]
     while node is not None:
         fields = node.feature.split(",")
-        if fields[0] == '名詞' or fields[0] == '動詞' or fields[0] == '形容詞':   
+        if fields[0] == '名詞' or fields[0] == '動詞' or fields[0] == '形容詞':    
             try:
                 for keyword in keywords:
+                    print(node.surface)
                     #　単語とkeywordの類似度
                     similarity_score = model.wv.similarity(node.surface, keyword)
-                    scores.append(similarity_score)
-                    word.append(node.surface)
+                    if similarity_score >= 0.7:
+                        scores.append(similarity_score)
+                        results.append(
+                            {"similarity_score": similarity_score, "trigger_keyword": keyword, "target_keyword": node.surface}
+                        )
+            # 学習modelに切り取った言葉がない例外処理
             except KeyError:
                 pass 
         node = node.next
 
-    highscore = max(scores)
-    highscore_index = scores.index(highscore) // len(keywords)
-    highscore_word = word[highscore_index]
-    
-    # 類似度が70％以上でないと、特殊詐欺に扱われる言葉として認定出来ない
-    if highscore >= 0.7:
-        return {"score": str(highscore), "word": str(highscore_word)}
-    else:
-        return {"score": 0}
-
+    # 類似度数のリストの平均を脅威度としている
+    threat_score = sum(scores) / len(scores)
+    return {"threat_score": threat_score, "results": results}
