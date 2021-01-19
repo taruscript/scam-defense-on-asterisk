@@ -18,7 +18,7 @@ tagger.parse("")
 open("./scam_info.json", 'w')
 
 @app.route('/scam_check', methods=['POST'])
-def scam_check():
+def input_data():
     if 'file' not in request.files:
         return "ファイル未指定"
     fs = request.files['file']
