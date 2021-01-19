@@ -2,6 +2,7 @@ from flask import Flask, request, Blueprint, jsonify
 import speech_recognition as sr
 import os
 import MeCab
+import json
 from gensim.models import word2vec
 from gensim.models import KeyedVectors
 
@@ -10,18 +11,16 @@ app = Blueprint('input_data', __name__)
 
 model = KeyedVectors.load_word2vec_format('apps/word_model/entity_vector.model.bin', binary=True)
 # model = KeyedVectors.load_word2vec_format('apps/word_model/entity_vector.model.bin')
-tagger = MeCab.Tagger("-d /var/lib/mecab/dic/ipadic")
-# tagger = MeCab.Tagger("-d /usr/local/lib/mecab/dic/ipadic/")
+# tagger = MeCab.Tagger("-d /var/lib/mecab/dic/ipadic")
+tagger = MeCab.Tagger("-d /usr/local/lib/mecab/dic/ipadic/")
 tagger.parse("")
 
+open("./scam_info.json", 'w')
 
-
-# index にアクセスされた場合の処理
 @app.route('/scam_check', methods=['POST'])
-def input_data():
+def scam_check():
     if 'file' not in request.files:
         return "ファイル未指定"
-    
     fs = request.files['file']
     
     # ファイルを保存
@@ -35,8 +34,17 @@ def input_data():
         
     scam_result =  scam_check(audio_recognized)
     # return jsonify(scam_result)
-    return jsonify({"msg":"sucess", "check": scam_result})
+    return jsonify({"msg":"sucess", "content": scam_result})
 
+# 現在のスコアを取得する
+@app.route("/current_score", methods=['GET'])
+def current_score():
+    with open("./scam_info.json", 'r') as outfile:
+        # json.dump(scam_infomation, outfile, ensure_ascii=False)
+        json_data = json.load(outfile)
+    
+    # return jsonify({"total_score": json_data["threat_score"], "result": json_data["results"]})
+    return jsonify(json_data)
 
 def voice_recognize(save_path):
     print("音声認識を開始します") 
@@ -57,11 +65,10 @@ def scam_check(text):
     #渡されたテキストを形態素解析
     node = tagger.parseToNode(text)
     scores = []
-    # word = []
     results = []
     # 特殊詐欺に使われそうな語群
-    keywords = ['銀行','警察']
-    # keywords = ["泡", "石鹸"]
+    # keywords = ['銀行','警察']
+    keywords = ["泡", "石鹸"]
     while node is not None:
         fields = node.feature.split(",")
         if fields[0] == '名詞' or fields[0] == '動詞' or fields[0] == '形容詞':    
@@ -73,7 +80,7 @@ def scam_check(text):
                     if similarity_score >= 0.7:
                         scores.append(similarity_score)
                         results.append(
-                            {"similarity_score": similarity_score, "trigger_keyword": keyword, "target_keyword": node.surface}
+                            {"similarity_score": float(similarity_score), "trigger_keyword": str(keyword), "target_keyword": str(node.surface)}
                         )
             # 学習modelに切り取った言葉がない例外処理
             except KeyError:
@@ -81,5 +88,23 @@ def scam_check(text):
         node = node.next
 
     # 類似度数のリストの平均を脅威度としている
-    threat_score = sum(scores) / len(scores)
-    return {"threat_score": threat_score, "results": results}
+    try:
+        threat_score = sum(scores) / len(scores)
+    except ZeroDivisionError:
+        return
+
+    with open("./scam_info.json", 'r') as outfile:
+        try:
+            json_data = json.load(outfile)
+            total_score = json_data["total_score"]
+        except json.decoder.JSONDecodeError:
+            total_score = 0
+        
+    
+    total_score += threat_score
+    scam_infomation = {"total_score": total_score, "threat_score": threat_score, "results": results}
+    
+    with open("./scam_info.json", 'w') as outfile:
+        json.dump(scam_infomation, outfile, ensure_ascii=False)
+    
+    return scam_infomation
