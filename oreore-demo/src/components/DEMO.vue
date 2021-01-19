@@ -7,6 +7,8 @@
 
 <script>
 import LineChart from './LineChart.js'
+import axios from 'axios'
+
   export default {
     components: {
       LineChart
@@ -19,12 +21,24 @@ import LineChart from './LineChart.js'
       }
     },
     mounted () {
-      this.fillData()
+        this.fillData()
     },
     methods: {
-        fillData () {
+
+        async fetchGetResult(){
+            await axios.get("/current_score").then(res => {
+                console.log(res.data)
+                const total_score = res.data["total_score"] 
+                this.scores.push(total_score)
+            })
+        }
+        ,
+        async fillData () {
+            for(;;){
+            this.sleep(5000)
             this.createLabels()
-            this.appendScores()
+            // this.appendScores()
+            await this.fetchGetResult()
             this.datacollection = {
             labels: this.labels,
             datasets: [
@@ -34,6 +48,7 @@ import LineChart from './LineChart.js'
                 data: this.scores
                 }
             ],
+            }
             }
         },      
         getRandomInt () {
@@ -45,7 +60,12 @@ import LineChart from './LineChart.js'
         },
         createLabels() {
             this.labels.push(this.scores.length)
-        } 
+        },
+        sleep(waitMsec) {
+            var startMsec = new Date();
+            // 指定ミリ秒間だけループさせる（CPUは常にビジー状態）
+            while (new Date() - startMsec < waitMsec);
+        }
     }
   }
 </script>
