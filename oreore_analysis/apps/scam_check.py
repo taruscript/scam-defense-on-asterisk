@@ -67,7 +67,7 @@ def scam_check(text):
     scores = []
     results = []
     # 特殊詐欺に使われそうな語群
-    keywords = ['金']
+    keywords = ['金', '振込', '急用', 'ATM', '銀行']
     # keywords = ["泡", "石鹸"]
     while node is not None:
         fields = node.feature.split(",")
