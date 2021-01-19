@@ -67,8 +67,8 @@ def scam_check(text):
     scores = []
     results = []
     # 特殊詐欺に使われそうな語群
-    # keywords = ['銀行','警察']
-    keywords = ["泡", "石鹸"]
+    keywords = ['金']
+    # keywords = ["泡", "石鹸"]
     while node is not None:
         fields = node.feature.split(",")
         if fields[0] == '名詞' or fields[0] == '動詞' or fields[0] == '形容詞':    
@@ -88,10 +88,8 @@ def scam_check(text):
         node = node.next
 
     # 類似度数のリストの平均を脅威度としている
-    try:
-        threat_score = sum(scores) / len(scores)
-    except ZeroDivisionError:
-        return
+    # threat_score = sum(scores) / len(scores)
+    threat_score = sum(scores)
 
     with open("./scam_info.json", 'r') as outfile:
         try:
