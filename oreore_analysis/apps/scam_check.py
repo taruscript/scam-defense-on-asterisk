@@ -89,6 +89,7 @@ def scam_check(text):
 
     # 類似度数のリストの平均を脅威度としている
     # threat_score = sum(scores) / len(scores)
+    print(scores)
     threat_score = sum(scores)
 
     with open("./scam_info.json", 'r') as outfile:
