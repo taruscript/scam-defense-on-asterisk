@@ -67,17 +67,16 @@ def scam_check(text):
     scores = []
     results = []
     # 特殊詐欺に使われそうな語群
-    keywords = ['金', '振込', '急用', 'ATM', '銀行']
-    # keywords = ["泡", "石鹸"]
+    # keywords = ['金', '振込', '急用', 'ATM', '銀行']
+    keywords = ["泡", "石鹸", "シャンプー"]
     while node is not None:
         fields = node.feature.split(",")
         if fields[0] == '名詞' or fields[0] == '動詞' or fields[0] == '形容詞':    
             try:
                 for keyword in keywords:
-                    print(node.surface)
                     #　単語とkeywordの類似度
                     similarity_score = model.wv.similarity(node.surface, keyword)
-                    if similarity_score >= 0.7:
+                    if similarity_score >= 0.6:
                         scores.append(similarity_score)
                         results.append(
                             {"similarity_score": float(similarity_score), "trigger_keyword": str(keyword), "target_keyword": str(node.surface)}
@@ -86,11 +85,16 @@ def scam_check(text):
             except KeyError:
                 pass 
         node = node.next
-
+    
+    try:
     # 類似度数のリストの平均を脅威度としている
-    # threat_score = sum(scores) / len(scores)
-    print(scores)
-    threat_score = sum(scores)
+        threat_score = sum(scores) / len(scores)
+    except ZeroDivisionError:
+        print("scoresのlengthがゼロになったので、単語に対する脅威度を出さない")
+        threat_score = 0
+        pass
+    # print(scores)
+    # threat_score = sum(scores)
 
     with open("./scam_info.json", 'r') as outfile:
         try:
