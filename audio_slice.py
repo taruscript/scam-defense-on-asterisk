@@ -8,7 +8,7 @@ import os
 
 
 # timeで指定した分だけ、音声をスライスする処理。　eg: 10000=10秒
-def extracting_from_last(time=10000, import_file="./example.wav", export_file="./output.wav"):
+def extracting_from_last(time=20000, import_file="./example.wav", export_file="./output.wav"):
     os.system(f'ffmpeg -y -i "{import_file}" -ar 44100 "output2.wav"')
     time = -time
     sound = AudioSegment.from_file("output2.wav", format="wav")

@@ -13,8 +13,8 @@ app = Blueprint('input_data', __name__)
 
 model = KeyedVectors.load_word2vec_format('apps/word_model/entity_vector.model.bin', binary=True)
 # model = KeyedVectors.load_word2vec_format('apps/word_model/entity_vector.model.bin')
-# tagger = MeCab.Tagger("-d /var/lib/mecab/dic/ipadic")
-tagger = MeCab.Tagger("-d /usr/local/lib/mecab/dic/ipadic/")
+tagger = MeCab.Tagger("-d /var/lib/mecab/dic/ipadic-utf8")
+# tagger = MeCab.Tagger("-d /usr/local/lib/mecab/dic/ipadic/")
 tagger.parse("")
 
 open("./scam_info.json", 'w')
@@ -77,7 +77,7 @@ def scam_check(text):
                 for keyword in keywords:
                     #　単語とkeywordの類似度
                     similarity_score = model.wv.similarity(node.surface, keyword)
-                    if similarity_score >= 0.6:
+                    if similarity_score >= 0.5: 
                         scores.append(similarity_score)
                         results.append(
                             {"similarity_score": float(similarity_score), "trigger_keyword": str(keyword), "target_keyword": str(node.surface)}
