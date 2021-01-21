@@ -33,8 +33,6 @@ import gsap from 'gsap'
         async fetchGetResult(){
             await axios.get("/current_score").then(res => {
                 console.log(res.data)
-                // 関数実行の度に文字流しの部分を初期化する
-                this.words = []
 
                 const total_score = res.data["total_score"]
                 const results = res.data["results"]
@@ -101,6 +99,8 @@ import gsap from 'gsap'
               const target_keyword = this.words[word]
               await this.createText(target_keyword)
           }
+          // 関数実行の度に文字流しの部分を初期化する
+          this.words = []
         }
     }
   }
