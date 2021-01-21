@@ -35,7 +35,6 @@ import gsap from 'gsap'
 
                 const total_score = res.data["total_score"]
                 const results = res.data["results"]
-
                 this.scores.push(total_score)
                 if (this.before_score != total_score) {
                   this.before_score = total_score
@@ -46,6 +45,7 @@ import gsap from 'gsap'
                 }
             })
             this.renderMoveText()
+            this.words = []
         },
         async fillData () {
           for(;;){
@@ -75,6 +75,9 @@ import gsap from 'gsap'
             while (new Date() - startMsec < waitMsec);
         },
         async createText(word) {
+          if (word == undefined){
+            return
+          }
           let div_text = document.createElement('div');
           // div_text.class="move_text";
           div_text.id="text"+this.count; //アニメーション処理で対象の指定に必要なidを設定
@@ -96,6 +99,9 @@ import gsap from 'gsap'
         async renderMoveText(){
             for (const word in this.words) {
               const target_keyword = this.words[word]
+              if (word == undefined) {
+                return
+              }
               await this.createText(target_keyword)
           }
           // 関数実行の度に文字流しの部分を初期化する
