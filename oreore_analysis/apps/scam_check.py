@@ -5,6 +5,8 @@ import MeCab
 import json
 from gensim.models import word2vec
 from gensim.models import KeyedVectors
+import requests
+
 
 # Blueprintオブジェクトを生成
 app = Blueprint('input_data', __name__)
@@ -59,7 +61,6 @@ def voice_recognize(save_path):
         return None
     return result_recognized
 
-
 # 特殊詐欺を検知する
 def scam_check(text):
     #渡されたテキストを形態素解析
@@ -100,6 +101,9 @@ def scam_check(text):
         try:
             json_data = json.load(outfile)
             total_score = json_data["total_score"]
+            if total_score >= 10:
+                send_line_notify("この通話はオレオレ詐欺の可能性があります。")
+
         except json.decoder.JSONDecodeError:
             total_score = 0
         
@@ -111,3 +115,10 @@ def scam_check(text):
         json.dump(scam_infomation, outfile, ensure_ascii=False)
     
     return scam_infomation
+
+def send_line_notify(notification_message):
+    line_notify_token = os.environ.get("LINE_TOKEN")
+    line_notify_api = 'https://notify-api.line.me/api/notify'
+    headers = {'Authorization': f'Bearer {line_notify_token}'}
+    data = {'message': f'message: {notification_message}'}
+    requests.post(line_notify_api, headers = headers, data = data)
