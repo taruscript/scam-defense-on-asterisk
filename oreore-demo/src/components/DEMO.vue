@@ -2,7 +2,6 @@
   <div class="demo">
     <div class="score">
       <line-chart :chart-data="datacollection"></line-chart>
-      <button @click="fillData()">Randomize</button>
     </div>
   </div>
 </template>
