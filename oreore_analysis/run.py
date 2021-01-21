@@ -3,7 +3,18 @@ import os
 import controllers
 
 
+from os.path import join, dirname
+from dotenv import load_dotenv
+
 app = controllers.app
+
+
+load_dotenv(verbose=True)
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+LINE_TOKEN = os.environ.get("LINE_TOKEN")
 
 
 if __name__ == "__main__":

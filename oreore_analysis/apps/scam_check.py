@@ -5,6 +5,8 @@ import MeCab
 import json
 from gensim.models import word2vec
 from gensim.models import KeyedVectors
+import requests
+
 
 # Blueprintオブジェクトを生成
 app = Blueprint('input_data', __name__)
@@ -59,7 +61,6 @@ def voice_recognize(save_path):
         return None
     return result_recognized
 
-
 # 特殊詐欺を検知する
 def scam_check(text):
     #渡されたテキストを形態素解析
@@ -67,17 +68,16 @@ def scam_check(text):
     scores = []
     results = []
     # 特殊詐欺に使われそうな語群
-    keywords = ['金', '振込', '急用', 'ATM', '銀行']
-    # keywords = ["泡", "石鹸"]
+    # keywords = ['金', '振込', '急用', 'ATM', '銀行']
+    keywords = ["泡", "石鹸", "シャンプー"]
     while node is not None:
         fields = node.feature.split(",")
         if fields[0] == '名詞' or fields[0] == '動詞' or fields[0] == '形容詞':    
             try:
                 for keyword in keywords:
-                    print(node.surface)
                     #　単語とkeywordの類似度
                     similarity_score = model.wv.similarity(node.surface, keyword)
-                    if similarity_score >= 0.5:
+                    if similarity_score >= 0.5: 
                         scores.append(similarity_score)
                         results.append(
                             {"similarity_score": float(similarity_score), "trigger_keyword": str(keyword), "target_keyword": str(node.surface)}
@@ -86,16 +86,24 @@ def scam_check(text):
             except KeyError:
                 pass 
         node = node.next
-
+    
+    try:
     # 類似度数のリストの平均を脅威度としている
-    # threat_score = sum(scores) / len(scores)
-    print(scores)
-    threat_score = sum(scores)
+        threat_score = sum(scores) / len(scores)
+    except ZeroDivisionError:
+        print("scoresのlengthがゼロになったので、単語に対する脅威度を出さない")
+        threat_score = 0
+        pass
+    # print(scores)
+    # threat_score = sum(scores)
 
     with open("./scam_info.json", 'r') as outfile:
         try:
             json_data = json.load(outfile)
             total_score = json_data["total_score"]
+            if total_score >= 10:
+                send_line_notify("この通話はオレオレ詐欺の可能性があります。")
+
         except json.decoder.JSONDecodeError:
             total_score = 0
         
@@ -107,3 +115,10 @@ def scam_check(text):
         json.dump(scam_infomation, outfile, ensure_ascii=False)
     
     return scam_infomation
+
+def send_line_notify(notification_message):
+    line_notify_token = os.environ.get("LINE_TOKEN")
+    line_notify_api = 'https://notify-api.line.me/api/notify'
+    headers = {'Authorization': f'Bearer {line_notify_token}'}
+    data = {'message': f'message: {notification_message}'}
+    requests.post(line_notify_api, headers = headers, data = data)

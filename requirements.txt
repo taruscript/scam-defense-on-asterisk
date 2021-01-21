@@ -4,3 +4,4 @@ flask
 SpeechRecognition
 mecab-python3
 gensim
+python-dotenv
